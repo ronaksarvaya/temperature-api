@@ -2,6 +2,8 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 import numpy as np
 import os
+from collections import OrderedDict
+
 
 app = Flask(__name__)
 CORS(app)
@@ -21,7 +23,17 @@ def temperature_data():
         })
         index += days
 
-    return jsonify(result)
+
+
+    month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+    ordered_data = OrderedDict()
+    for month in month_order:
+        if month in result:
+            ordered_data[month] = result[month]
+
+    return jsonify(ordered_data)
 
 
 if __name__ == '__main__':
