@@ -1,3 +1,4 @@
+import os
 from flask import Flask, jsonify
 import numpy as np
 
@@ -6,7 +7,6 @@ app = Flask(__name__)
 @app.route('/temperature-data', methods=['GET'])
 def get_temperature_data():
     rand_temps = np.random.randint(26, 42, size=365)
-
     months = [
         ("January", 31), ("February", 28), ("March", 31),
         ("April", 30), ("May", 31), ("June", 30),
@@ -29,4 +29,5 @@ def get_temperature_data():
     return jsonify(data)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000)) 
+    app.run(host='0.0.0.0', port=port)
