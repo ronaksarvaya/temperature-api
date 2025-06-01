@@ -4,31 +4,25 @@ import numpy as np
 import os
 
 app = Flask(__name__)
-CORS(app)  
+CORS(app)
 
-@app.route('/temperature-data', methods=['GET'])
-def get_temperature_data():
-    rand_temps = np.random.randint(26, 42, size=365)
-    months = [
-        ("January", 31), ("February", 28), ("March", 31),
-        ("April", 30), ("May", 31), ("June", 30),
-        ("July", 31), ("August", 31), ("September", 30),
-        ("October", 31), ("November", 30), ("December", 31)
-    ]
+@app.route('/temperature-data')
+def temperature_data():
+    # Generate random temperature data for 365 days
+    temps = np.random.randint(26, 42, 365).tolist()
 
-    data = {}
-    day_index = 0
+    # Number of days in each month (non-leap year)
+    month_days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    month_names = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 
-    for month_name, days_in_month in months:
-        month_data = {}
-        for day in range(1, days_in_month + 1):
-            celsius = int(rand_temps[day_index])
-            fahrenheit = round((celsius * 9 / 5) + 32, 1)
-            month_data[str(day)] = {"celsius": celsius, "fahrenheit": fahrenheit}
-            day_index += 1
-        data[month_name] = month_data
+    result = {}
+    index = 0
+    for i, days in enumerate(month_days):
+        result[month_names[i]] = temps[index: index + days]
+        index += days
 
-    return jsonify(data)
+    return jsonify(result)
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
