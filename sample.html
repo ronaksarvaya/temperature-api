@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature Calendar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+        .calendar-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .month {
+            margin-bottom: 30px;
+        }
+        .month h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            background-color: #fff;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .calendar-day {
+            padding: 10px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .calendar-day.empty {
+            background-color: #eee;
+            border: none;
+        }
+        .calendar-day:hover {
+            background-color: #e0f7fa;
+            cursor: pointer;
+        }
+        .temp {
+            display: block;
+            font-size: 0.9em;
+            color: #d32f2f;
+        }
+        .header {
+            text-align: center;
+            font-weight: bold;
+            background-color: #1976d2;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .error {
+            text-align: center;
+            color: #d32f2f;
+            font-size: 1.2em;
+            margin: 20px;
+        }
+        .loading {
+            text-align: center;
+            color: #333;
+            font-size: 1.2em;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calendar-container">
+        <div id="calendar"></div>
+    </div>
+    <script>
+        const API_URL = "https://temperature-api-j8nv.onrender.com/temperature-data"
+        const daysInMonth = {
+            Jan: 31, Feb: 28, Mar: 31, Apr: 30, May: 31, Jun: 30,
+            Jul: 31, Aug: 31, Sep: 30, Oct: 31, Nov: 30, Dec: 31
+        };
+
+        async function fetchTemperatureData() {
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = '<div class="loading">Loading...</div>';
+
+            try {
+           
+                const response = await fetch(API_URL);
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                const temperatureData = await response.json();
+                generateCalendar(temperatureData);
+            } catch (error) {
+                calendar.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        function generateCalendar(temperatureData) {
+            const calendar = document.getElementById('calendar');
+            calendar.innerHTML = ''; 
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+          
+            const header = document.createElement('div');
+            header.className = 'calendar-grid';
+            weekdays.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'header';
+                dayHeader.textContent = day;
+                header.appendChild(dayHeader);
+            });
+            calendar.appendChild(header);
+
+           
+            temperatureData.order.forEach(month => {
+                const monthDiv = document.createElement('div');
+                monthDiv.className = 'month';
+                monthDiv.innerHTML = `<h2>${month}</h2>`;
+                const grid = document.createElement('div');
+                grid.className = 'calendar-grid';
+
+             
+                for (let i = 0; i < 6; i++) {
+                    const emptyCell = document.createElement('div');
+                    emptyCell.className = 'calendar-day empty';
+                    grid.appendChild(emptyCell);
+                }
+
+
+                const temps = temperatureData.data[month] || [];
+                for (let day = 1; day <= daysInMonth[month]; day++) {
+                    const dayCell = document.createElement('div');
+                    dayCell.className = 'calendar-day';
+                    const temp = temps[day - 1] !== undefined ? temps[day - 1] : 'N/A';
+                    dayCell.innerHTML = `${day}<span class="temp">${temp}°C</span>`;
+                    grid.appendChild(dayCell);
+                }
+
+                monthDiv.appendChild(grid);
+                calendar.appendChild(monthDiv);
+            });
+        }
+
+        
+        window.onload = fetchTemperatureData;
+    </script>
+</body>
+</html>

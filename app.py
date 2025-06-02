@@ -4,9 +4,13 @@ import numpy as np
 import os
 from collections import OrderedDict
 
-
 app = Flask(__name__)
 CORS(app)
+
+@app.route('/')
+def redirect():
+    return "Add /temperature-data in the URL"
+
 @app.route('/temperature-data')
 def temperature_data():
     temps = np.random.randint(26, 42, 365).tolist()
@@ -23,19 +27,14 @@ def temperature_data():
         })
         index += days
 
-
-
-    month_order = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
-
     ordered_data = OrderedDict()
-    for month in month_order:
-        if month in result:
-            ordered_data[month] = result[month]
+    for entry in result:
+        ordered_data[entry["month"]] = entry["temps"]
 
-    return jsonify(ordered_data)
-
-
+    return jsonify({
+        "data": ordered_data,
+        "order": month_names
+    })
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port)
